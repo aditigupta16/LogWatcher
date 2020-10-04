@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+<body>
+
+<div id="logdiv"></div>
+
+<script type="text/babel">
+    class App extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                initialData: null,
+                streamingData: null,
+            };
+        }
+        async componentDidMount() {
+            await fetch("/initial-data")
+                .then((response) => response.text())
+                .then((initialData) => this.setState({ initialData: initialData }));
+            this.eventSource = new EventSource("/stream", {});
+            this.eventSource.addEventListener(
+                "message",
+                function (e) {
+                    this.setState({
+                        streamingData: e.data,
+                    });
+                }.bind(this),
+                false
+            );
+        }
+        componentWillUnmount() {
+            this.eventSource.close();
+        }
+        render() {
+            return (
+                <div className="mdl-grid">
+                    <h6 className="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone">
+                        Welcome to the Log watcher
+                    </h6>
+                    {this.state.streamingData!=null ? (
+                        <div>
+                            <h6 className="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone">
+                                The latest entries in log
+                            </h6>
+                        <h6 className="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone">
+                            {this.state.streamingData}
+                        </h6>
+                        </div>
+                    ) : (
+                        <div>
+                        <h6 className="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone">
+                            The last 10 entries, any log update will show only added entries
+                        </h6>
+                        <h6 className="mdl-cell mdl-cell--12-col mdl-cell--4-col-phone">
+                            {this.state.initialData && this.state.initialData}
+                        </h6>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+    }
+
+    ReactDOM.render(<App />, document.getElementById('logdiv'))
+</script>
+</body>
+</html>
