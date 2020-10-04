@@ -1,13 +1,12 @@
 from flask import Flask, Response, render_template
 app = Flask(__name__)
-import time
 
 @app.route("/")
 def index():
     return render_template('index.html')
 
 @app.route("/initial-data")
-def initial_stream():
+def initial_data():
     file = open('log.csv')
     content = file.read().split(',')
     file.close()
@@ -18,13 +17,14 @@ def initial_stream():
 @app.route("/stream")
 def stream():
     def eventStream():
+        # will run only once for storing the initial index
         file=open('log.csv')
-        initial_content = file.read().split(',')
+        file.read()
         initial_content_index = file.tell()
         file.close()
         while True:
-            time.sleep(5)
             file=open('log.csv')
+            # to avoid reading the complete file again start from last updated index
             file.seek(initial_content_index)
             content = file.read()
             file.close()
