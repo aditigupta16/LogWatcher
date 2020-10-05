@@ -23,7 +23,7 @@
             await fetch("/initial-data")
                 .then((response) => response.text())
                 .then((initialData) => this.setState({ initialData: initialData }));
-            this.eventSource = new EventSource("/stream", {});
+            this.eventSource = new EventSource("/stream");
             this.eventSource.addEventListener(
                 "message",
                 function (e) {
